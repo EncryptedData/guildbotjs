@@ -1,0 +1,28 @@
+{
+  "name": "guildbotjs",
+  "version": "1.0.0",
+  "description": "Discord Bot for D&D related things",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "-- ---"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EncryptedData/guildbotjs.git"
+  },
+  "keywords": [
+    "Discord",
+    "Bot",
+    "D&D"
+  ],
+  "author": "Russell Johnson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EncryptedData/guildbotjs/issues"
+  },
+  "homepage": "https://github.com/EncryptedData/guildbotjs#readme"
+}

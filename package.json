@@ -4,7 +4,8 @@
   "description": "Discord Bot for D&D related things",
   "main": "index.js",
   "dependencies": {
-    "discord.js": "^11.4.2"
+    "discord.js": "^11.4.2",
+    "lokijs": "^1.5.6"
   },
   "devDependencies": {},
   "scripts": {

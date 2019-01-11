@@ -29,7 +29,7 @@
   */
  client.on('ready', () => {
      console.log("==== guildbotjs ====");
-     console.log("Bot logged in as ${client.user.tag}");
+     console.log('Bot logged in as ${client.user.tag}');
  });
 
 function getUserInCollection(discordID)
@@ -43,6 +43,61 @@ function getUserInCollection(discordID)
     }
 
     return result;
+}
+
+function getDiscordUser(msg, username)
+{
+    
+}
+
+function getUserGold(id)
+{
+    var result = getUserInCollection(id);
+
+    return result.balance;
+}
+
+function setUserGold(id, value)
+{
+    var user = getUserInCollection(id);
+
+    user.balance = value;
+
+    userCollection.update(user);
+}
+
+function addUserGold(id, amount)
+{
+    var result = getUserInCollection(id);
+
+    result.balance += amount;
+
+    userCollection.update(result);
+}
+
+function subtractUserGold(id, amount, doSaturation = false)
+{
+    var user = getUserInCollection(id);
+
+    if(user.balance - amount < 0)
+    {
+        if(doSaturation)
+        {
+            user.balance = 0;
+        }
+        else
+        {
+            return amount - user.balance;
+        }
+    }
+    else
+    {
+        user.balance -= amount;
+    }
+
+    userCollection.update(user);
+
+    return 0;
 }
 
  /**
@@ -65,6 +120,103 @@ function shouldListenToChannel(msg)
     }
 
     return false;
+}
+
+
+function handleGoldCommand(msg, args)
+{
+    const author = msg.author;
+    const channel = msg.channel;
+
+    if(args.length == 0 || args[0] === "balance")
+    {
+        channel.send(author + " your balance is " + getUserGold(author.id) + " gold");
+        return;
+    }
+
+    if(args[0] === "give")
+    {
+        if(args.length < 3)
+        {
+            channel.send("gold give [user] [amount]");
+            return;
+        }
+
+        var target = msg.mentions.members.first();
+
+        if(target === undefined)
+        {
+            channel.send(args[1] + " is not a user!");
+            return;
+        }
+
+        const amount = parseInt(args[2]);
+
+        if(amount === NaN)
+        {
+            channel.send(args[2] + " is not a number.");
+            return;
+        }
+
+        if(amount < 0)
+        {
+            channel.send("The amount must be a positive number.");
+            return;
+        }
+
+        const subResult = subtractUserGold(author.id, amount, false);
+
+        if(subResult !== 0)
+        {
+            channel.send(author + " You must have " + subResult + " more gold before you can give to " + target);
+            return;
+        }
+
+        addUserGold(target.id, amount);
+        channel.send(author + " sent " + target +" " + amount + " gold.");
+        target.send(author + " sent you " + amount + " gold.");
+
+        return;
+    }
+
+    channel.send("!gold or !gold [arguments]");
+}
+
+function handleDmCommand(msg, args)
+{
+    const author = msg.author;
+    const channel = msg.channel;
+
+    if(args.length === 0)
+    {
+        channel.send("!dm [args]");
+        return;
+    }
+
+    if(args[0] === "gold")
+    {
+        if(args.length < 2)
+        {
+            channel.send("!dm gold [user]");
+            return;
+        }
+
+        const target = msg.mentions.members.first();
+
+        if(target === undefined)
+        {
+            channel.send(args[1] + " is not a valid user!");
+            return;
+        }
+
+        const targetBalance = getUserGold(target.id);
+
+        channel.send(target + " has " + targetBalance + " gold.");
+
+        return;
+    }
+
+    channel.send("!dm [args]");
 }
 
  /**
@@ -99,40 +251,19 @@ function shouldListenToChannel(msg)
 
     if(command === "gold")
     {
-        if(args.length === 0)
-        {
-            var result = getUserInCollection(author.id);
-
-            channel.send(author.username + " your gold balance is: " + result.balance);
-        }
+        handleGoldCommand(msg, args);
     }
     else if(command === "dm")
     {
-        if(args.length <= 0)
-        {
-            channel.send("!dm [args]");
-            return;
-        }
-
-        if(args[0] === "gold")
-        {
-            if(args.length == 1)
-            {
-                channel.send("!dm gold [args]");
-            }
-
-            if(args[1] === "add")
-            {
-                var user = getUserInCollection(author.id);
-
-                user.balance += 100;
-                userCollection.update(user);
-            }
-        }
+        handleDmCommand(msg, args);
+    }
+    else if(command === "test")
+    {
+        addUserGold(author.id, 10000);
     }
     else
     {
-        author.send("Could not find command! See !help");
+        channel.send("Could not find command! See !help");
     }
  });
 
